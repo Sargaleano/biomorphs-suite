@@ -166,7 +166,7 @@ If you use this software in academic work, please cite:
 ```
 Rojas-Galeano, S. (2026). Biomorphs Suite: An interactive web reimplementation
 of Dawkins's biomorph model (v1.0). Universidad Distrital Francisco José de Caldas.
-MIT License. [https://sargaleano.github.io/biomorphs-suite/](https://sargaleano.github.io/biomorphs-suite/)
+MIT License. https://sargaleano.github.io/biomorphs-suite/
 ```
  
 Original concept:
