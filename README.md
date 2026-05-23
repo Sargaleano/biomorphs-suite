@@ -17,8 +17,9 @@ In 1986, Richard Dawkins wrote a program that changed how we think about biologi
  
 | App | Description | Launch |
 |---|---|---|
-| 🧬 **Biomorph Evolver** | Evolve creatures generation by generation through interactive selection | [**Open Evolver →**](https://srojasg.github.io/biomorphs-suite/biomorph_evolver.html) |
-| ✏️ **Biomorph Creator** | Sculpt a precise creature manually with gene sliders | [**Open Creator →**](https://srojasg.github.io/biomorphs-suite/biomorph_creator.html) |
+| ✏️ **Biomorph Suite** | Home page | [**Open Suite →**](https://sargaleano.github.io/biomorphs-suite/index.html) |
+| 🧬 **Biomorph Evolver** | Evolve creatures generation by generation through interactive selection | [**Open Evolver →**](https://sargaleano.github.io/biomorphs-suite/biomorph_evolver.html) |
+| ✏️ **Biomorph Creator** | Sculpt a precise creature manually with gene sliders | [**Open Creator →**](https://sargaleano.github.io/biomorphs-suite/biomorph_creator.html) |
  
 ---
  
@@ -30,7 +31,7 @@ The magic happens through **cumulative selection**: the user clicks one offsprin
  
 ```
 Genome:  [-6, -6, -6, -8, -4, 0, 4, 8, 5]   ← Dawkins's archetype
-          g0   g1   g2   g3   g4  g5 g6 g7  g8(depth)
+          g0  g1  g2  g3  g4  g5 g6 g7 g8 (depth)
 ```
  
 ---
