@@ -17,9 +17,9 @@ In 1986, Richard Dawkins wrote a program that changed how we think about biologi
  
 | App | Description | Launch |
 |---|---|---|
-| ✏️ **Biomorph Suite** | Home page | [**Open Suite →**](https://sargaleano.github.io/biomorphs-suite/index.html) |
-| 🧬 **Biomorph Evolver** | Evolve creatures generation by generation through interactive selection | [**Open Evolver →**](https://sargaleano.github.io/biomorphs-suite/biomorph_evolver.html) |
-| ✏️ **Biomorph Creator** | Sculpt a precise creature manually with gene sliders | [**Open Creator →**](https://sargaleano.github.io/biomorphs-suite/biomorph_creator.html) |
+| 🏠 **Biomorph Suite** | Home page | [**Open Suite**](https://sargaleano.github.io/biomorphs-suite/index.html) |
+| 🧬 **Biomorph Evolver** | Evolve creatures generation by generation through interactive selection | [**Open Evolver**](https://sargaleano.github.io/biomorphs-suite/biomorph_evolver.html) |
+| ✏️ **Biomorph Creator** | Sculpt a precise creature manually with gene sliders | [**Open Creator**](https://sargaleano.github.io/biomorphs-suite/biomorph_creator.html) |
  
 ---
  
@@ -59,7 +59,6 @@ Genome:  [-6, -6, -6, -8, -4, 0, 4, 8, 5]   ← Dawkins's archetype
 - Renders via the browser's native **Canvas API 2D**
 - Fully **client-side** — no server, no backend, no data collection
 - Works in any modern browser (Chrome, Firefox, Safari, Edge)
-- **Dark mode** supported via `prefers-color-scheme`
 ---
  
 ## The 9-Gene Model
@@ -76,15 +75,20 @@ Genome:  [-6, -6, -6, -8, -4, 0, 4, 8, 5]   ← Dawkins's archetype
 | g7 | Sprawl | Overall horizontal scaling factor | −9 to 9 |
 | g8 | Depth | Recursion depth — branching levels | 3 to 9 |
  
-The **Friendly mode** maps 5 intuitive parameters `[Cx, Sp, Ht, Ta, Sw]` to the full 9-gene space via the `expand()` function:
+The **Friendly mode** maps 5 intuitive parameters `[Cx, Sp, Ht, Ta, Sw]` to the full 9-gene space via the following transformation:
  
 ```js
+-----------------------------------------------------------------
 t  = Ta / 9
-g0 = round(Sp),       g1 = round(Sp × 0.7),  g2 = round(Sp × 0.4)
-g3 = Ht,              g4 = Ht
-g5 = round(Ht × (1 + t))
-g6 = round(Ht × (1 + t) × (1 + t × 0.5))
-g7 = Sw,              g8 = Cx
+-----------------------------------------------------------------
+g0 = round(Sp)      g1 = round(Sp×0.7)    g2 = round(Sp×0.4)
+-----------------------------------------------------------------
+g3 = Ht             g4 = Ht
+-----------------------------------------------------------------
+g5 = round(Ht×(1+t))                g6 = round(Ht×(1+t)×(1+t×0.5))
+-----------------------------------------------------------------
+g7 = Sw             g8 = Cx
+-----------------------------------------------------------------
 ```
  
 ---
@@ -160,7 +164,7 @@ If you use this software in academic work, please cite:
 ```
 Rojas-Galeano, S. (2026). Biomorphs Suite: An interactive web reimplementation
 of Dawkins's biomorph model (v1.0). Universidad Distrital Francisco José de Caldas.
-MIT License. https://github.com/srojasg/biomorphs-suite
+MIT License. [https://sargaleano.github.io/biomorphs-suite/](https://sargaleano.github.io/biomorphs-suite/)
 ```
  
 Original concept:
@@ -182,5 +186,7 @@ See [`LICENSE`](LICENSE) for the full text.
 ## Contact
  
 **Sergio Rojas-Galeano**
+
 Universidad Distrital Francisco José de Caldas · Bogotá, Colombia
+
 ✉ srojas@udistrital.edu.co
