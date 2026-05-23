@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biomorph Evolver · Dawkins</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & page ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ff-body: 'DM Sans', system-ui, sans-serif;
+  --ff-mono: 'DM Mono', 'Courier New', monospace;
+
+  /* Neutral palette — light */
+  --bg-page:    #e8e6e0;
+  --bg-app:     #f5f3ee;
+  --bg-sec:     #ece9e2;
+  --bg-cell:    #f5f3ee;
+  --bg-par:     #e8e5dd;
+  --bg-info:    #ddeaf5;
+
+  --border:     rgba(0,0,0,.13);
+  --border-lt:  rgba(0,0,0,.07);
+
+  --text-pri:   #1a1814;
+  --text-sec:   #4a4740;
+  --text-ter:   #8a8680;
+  --text-info:  #2860a8;
+
+  --accent:     #c85a14;       /* warm amber-orange */
+  --accent-lt:  #f0e4d8;
+  --star-on:    #d4820a;
+  --blue:       #2060c0;
+  --green:      #287040;
+  --amber:      #b06010;
+  --red:        #b03020;
+
+  --radius:     6px;
+  --radius-sm:  4px;
+  --shadow:     0 2px 12px rgba(0,0,0,.10), 0 1px 3px rgba(0,0,0,.08);
+  --shadow-lg:  0 8px 40px rgba(0,0,0,.15), 0 2px 8px rgba(0,0,0,.10);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-page:    #111110;
+    --bg-app:     #1c1b19;
+    --bg-sec:     #232220;
+    --bg-cell:    #1c1b19;
+    --bg-par:     #252420;
+    --bg-info:    #162030;
+
+    --border:     rgba(255,255,255,.10);
+    --border-lt:  rgba(255,255,255,.05);
+
+    --text-pri:   #f0ede6;
+    --text-sec:   #a8a49c;
+    --text-ter:   #686460;
+    --text-info:  #6898d8;
+
+    --accent:     #d8721e;
+    --accent-lt:  #2a1f14;
+    --star-on:    #e09820;
+    --blue:       #4888e0;
+    --green:      #48a868;
+    --amber:      #d08030;
+    --red:        #d04040;
+  }
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--ff-body);
+  font-size: 14px;
+  background: var(--bg-page);
+  color: var(--text-pri);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* ── App frame ── */
+.app-frame {
+  width: 100%;
+  max-width: 780px;
+  background: var(--bg-app);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Title bar ── */
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 11px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-app);
+}
+.title-left { display: flex; align-items: baseline; gap: 10px; }
+.app-title {
+  font-size: 15px; font-weight: 600; letter-spacing: -.02em;
+  color: var(--text-pri);
+}
+.app-sub {
+  font-size: 9px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text-sec); font-family: var(--ff-mono);
+}
+/* About button in titlebar */
+.about-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 50%;
+  border: none; background: #2060c0;
+  font-size: 15px; font-weight: 900; color: #fff; font-style: normal;
+  cursor: pointer; transition: all .14s; flex-shrink: 0;
+  font-family: var(--ff-body);
+}
+.about-btn:hover { background: #1a50a8; }
+/* Modal overlay */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.45); z-index: 1000;
+  align-items: center; justify-content: center; padding: 24px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-app); border-radius: 12px; border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg); max-width: 500px; width: 100%;
+  max-height: 80vh; overflow-y: auto; padding: 0;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 14px; border-bottom: 1px solid var(--border);
+}
+.modal-title { font-size: 14px; font-weight: 600; color: var(--text-pri); }
+.modal-close {
+  width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border);
+  background: transparent; font-size: 16px; color: var(--text-sec);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .12s; line-height: 1;
+}
+.modal-close:hover { background: var(--bg-sec); color: var(--text-pri); }
+.modal-body { padding: 18px 20px 20px; }
+.modal-body h3 {
+  font-size: 11px; letter-spacing: .10em; text-transform: uppercase;
+  color: var(--accent); font-family: var(--ff-mono); margin: 16px 0 8px;
+}
+.modal-body h3:first-child { margin-top: 0; }
+.modal-body p {
+  font-size: 12px; line-height: 1.65; color: var(--text-sec); margin-bottom: 7px;
+}
+.modal-body p:last-child { margin-bottom: 0; }
+.modal-body ul {
+  font-size: 12px; line-height: 1.65; color: var(--text-sec);
+  padding-left: 16px; margin-bottom: 7px;
+}
+.modal-body ul li { margin-bottom: 3px; }
+.modal-body code {
+  font-family: var(--ff-mono); font-size: 11px; background: var(--bg-sec);
+  border-radius: 3px; padding: 1px 4px; color: var(--text-pri);
+}
+.modal-divider {
+  height: 1px; background: var(--border); margin: 16px 0;
+}
+.modal-body .license-block {
+  font-size: 11px; font-family: var(--ff-mono); color: var(--text-ter);
+  background: var(--bg-sec); border-radius: var(--radius-sm);
+  padding: 10px 12px; line-height: 1.6;
+}
+/* vertical separator in title bar */
+.title-vsep {
+  display: inline-block; width: 1px; height: 14px;
+  background: var(--border); margin: 0 4px; flex-shrink: 0; align-self: center;
+}
+
+/* ── Controls — two rows ── */
+.ctrlbar {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-sec);
+}
+.ctrl-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 5px 14px; flex-wrap: wrap;
+}
+.ctrl-row + .ctrl-row {
+  border-top: 1px solid var(--border-lt);
+}
+.cl {
+  font-size: 9px; letter-spacing: .10em; text-transform: uppercase;
+  color: var(--text-sec); white-space: nowrap; font-family: var(--ff-mono);
+}
+.cv {
+  font-size: 11px; font-family: var(--ff-mono); color: var(--text-pri);
+  min-width: 16px; text-align: right;
+}
+input[type=range] {
+  width: 72px; accent-color: var(--accent);
+  cursor: pointer;
+}
+.sep { width: 1px; height: 14px; background: var(--border); flex-shrink: 0; }
+.radio-opt {
+  display: flex; align-items: center; gap: 3px; cursor: pointer;
+  font-size: 11px; color: var(--text-sec); white-space: nowrap;
+}
+.radio-opt input { cursor: pointer; accent-color: var(--accent); }
+.bropts { display: flex; gap: 3px; }
+.bopt {
+  font-size: 10px; padding: 2px 8px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer; background: transparent; color: var(--text-sec);
+  font-family: var(--ff-mono); transition: all .12s;
+}
+.bopt:hover { border-color: var(--accent); color: var(--accent); }
+.bopt.on {
+  background: var(--text-pri); color: var(--bg-app);
+  border-color: var(--text-pri);
+}
+.chklbl {
+  display: flex; align-items: center; gap: 4px; cursor: pointer;
+  font-size: 10px; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--text-sec); white-space: nowrap;
+}
+.chklbl input { cursor: pointer; accent-color: var(--accent); }
+.legend { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.leg-item {
+  font-size: 9px; font-family: var(--ff-mono); color: var(--text-sec);
+  background: var(--bg-app); border: 1px solid var(--border-lt);
+  border-radius: 3px; padding: 1px 5px; white-space: nowrap;
+}
+.leg-item b { color: var(--accent); font-weight: 500; }
+
+/* ── Gallery tabs ── */
+.gallery-section {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-sec);
+}
+.gtabbar {
+  display: flex; align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+.gtab {
+  font-size: 9px; letter-spacing: .10em; text-transform: uppercase;
+  padding: 6px 13px; cursor: pointer; color: var(--text-sec);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  white-space: nowrap; font-family: var(--ff-mono);
+  transition: color .12s;
+}
+.gtab:hover { color: var(--text-pri); }
+.gtab.act { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-btns { margin-left: auto; display: flex; gap: 3px; padding: 3px 10px; }
+.iob {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 26px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer; background: transparent; font-size: 13px; line-height: 1;
+  color: var(--text-sec); transition: all .12s; padding: 0;
+}
+.iob:hover:not([disabled]) { color: var(--text-pri); border-color: var(--border); background: var(--bg-app); }
+.iob[disabled] { opacity: .3; cursor: not-allowed; }
+.iob.del:hover:not([disabled]) { color: var(--red); border-color: var(--red); }
+/* composite icon in iob */
+.iob .cico {
+  display: flex; flex-direction: column; align-items: center; gap: 0; line-height: 1;
+}
+.iob .cico .ci-top { font-size: 7px; line-height: 1; opacity: .8; }
+.iob .cico .ci-bot { font-size: 11px; line-height: 1; }
+.gallery-row {
+  display: flex; gap: 7px; padding: 7px 12px;
+  overflow-x: auto; min-height: 62px; align-items: center;
+}
+.gthumb {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer; flex-shrink: 0; opacity: .65; transition: opacity .15s;
+}
+.gthumb:hover { opacity: 1; }
+.gthumb canvas {
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  display: block; background: var(--bg-cell);
+}
+.gthumb span {
+  font-size: 8px; color: var(--text-sec); font-family: var(--ff-mono);
+  white-space: nowrap; max-width: 48px; overflow: hidden; text-overflow: ellipsis;
+}
+.hint-empty {
+  font-size: 10px; color: var(--text-sec); padding: 0 4px;
+  white-space: nowrap; font-style: italic;
+}
+
+/* ── Work area ── */
+.work-area {
+  display: flex; flex-direction: row; align-items: stretch;
+  background: var(--bg-cell); flex: 1;
+}
+.mosaic-wrap {
+  flex: 1; display: flex; justify-content: center; align-items: center;
+  padding: 12px; min-height: 220px;
+}
+.mosaic {
+  display: grid;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,.08);
+}
+
+/* ── Side toolbar ── */
+.side-toolbar {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 8px;
+  padding: 12px 8px;
+  border-left: 1px solid var(--border);
+  background: var(--bg-sec);
+  min-width: 54px;
+}
+.gen-pill {
+  font-size: 18px; font-weight: 500; font-family: var(--ff-mono);
+  color: var(--text-info); background: var(--bg-info);
+  border-radius: var(--radius); padding: 6px 8px;
+  text-align: center; white-space: nowrap; line-height: 1.1;
+  border: 1px solid rgba(40,96,168,.18);
+}
+.gen-pill .gen-lbl {
+  display: block; font-size: 7px; font-weight: 400;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text-info); opacity: .7; margin-top: 2px;
+  font-family: var(--ff-mono);
+}
+.tb-sep { width: 70%; height: 1px; background: var(--border); }
+.siob {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer; background: transparent; font-size: 19px; line-height: 1;
+  color: var(--text-sec); padding: 0; transition: all .14s;
+}
+.siob:hover { background: var(--bg-app); border-color: var(--border); }
+.siob.hi-green:hover { color: var(--green); border-color: var(--green); }
+.siob.hi-amber:hover { color: var(--amber); border-color: var(--amber); }
+.siob.hi-blue:hover  { color: var(--blue);  border-color: var(--blue);  }
+/* composite icon: stacked emoji pair */
+.siob .cico {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0; line-height: 1;
+}
+.siob .cico .ci-top { font-size: 9px; line-height: 1; opacity: .85; }
+.siob .cico .ci-bot { font-size: 13px; line-height: 1; }
+
+/* ── Cells ── */
+.cell {
+  display: flex; flex-direction: column; align-items: center;
+  cursor: pointer; position: relative;
+  border: 1px solid var(--border-lt);
+  background: var(--bg-cell); transition: background .1s; overflow: hidden;
+}
+.cell:hover { background: var(--bg-sec); }
+.cell.par { cursor: default; background: var(--bg-par); }
+.cell-star {
+  position: absolute; top: 3px; right: 5px; font-size: 13px; line-height: 1;
+  z-index: 2; color: var(--text-sec); cursor: pointer; user-select: none;
+  transition: color .15s;
+}
+.cell-star:hover { color: var(--star-on); }
+.cell-star.starred { color: var(--star-on); }
+.cell-idx {
+  position: absolute; top: 3px; right: 4px; font-size: 8px;
+  font-family: var(--ff-mono); color: var(--text-sec); line-height: 1; z-index: 2;
+}
+.par-lbl {
+  position: absolute; top: 3px; left: 5px; font-size: 7px;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-sec); z-index: 2; font-family: var(--ff-mono);
+}
+.cell canvas { display: block; }
+.cell-genome {
+  font-size: 7px; font-family: var(--ff-mono); color: var(--text-sec);
+  padding: 1px 3px 2px; text-align: center; line-height: 1.4; word-break: break-all;
+}
+.gstrip { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; padding: 1px 3px 3px; }
+.gtag {
+  font-size: 7px; font-family: var(--ff-mono); color: var(--text-sec);
+  background: var(--bg-sec); border-radius: 2px; padding: 1px 3px; white-space: nowrap;
+}
+.par .gtag { background: var(--bg-cell); }
+
+/* scrollbars */
+::-webkit-scrollbar { height: 4px; width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="app-frame">
+  <!-- About modal -->
+  <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">About Biomorph Evolver</span>
+        <button class="modal-close" onclick="closeModal()" title="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <h3>What are Biomorphs?</h3>
+        <p>Biomorphs are recursive tree-like creatures defined by 9 integer genes, invented by Richard Dawkins in <em>The Blind Watchmaker</em> (1986) to demonstrate how complexity can arise from cumulative selection — no designer required.</p>
+
+        <h3>How to evolve</h3>
+        <ul>
+          <li>The <strong>parent</strong> cell (★, top-left) shows the current creature. Click its ☆ to save it to your Gallery.</li>
+          <li><strong>Click any numbered offspring</strong> to breed it — it becomes the new parent and a fresh generation is born.</li>
+          <li><strong>🎲 Random</strong> — jumps to a new random genome.</li>
+          <li><strong>✴️ Reset</strong> — returns to the archetype genome from <em>The Blind Watchmaker</em>.</li>
+        </ul>
+
+        <h3>Gene modes</h3>
+        <ul>
+          <li><code>Friendly</code> — 5 intuitive sliders: <b>Cx</b> complexity, <b>Sp</b> spread, <b>Ht</b> height, <b>Ta</b> taper, <b>Sw</b> sprawl. Expanded to 9 genes internally.</li>
+          <li><code>Original</code> — the raw 9-gene Dawkins genome (g0–g7 + depth). Switching modes only changes the display; the brood is not regenerated.</li>
+        </ul>
+
+        <h3>Mutation controls</h3>
+        <ul>
+          <li><strong>Turbulence</strong> — how many genes mutate per offspring (1 = minimal drift, 8 = wild).</li>
+          <li><strong>Leap</strong> — maximum step size per mutated gene (1 = creep, 9 = jump).</li>
+        </ul>
+
+        <h3>Gallery &amp; Fossils</h3>
+        <ul>
+          <li><strong>🦴 Fossils</strong> — every parent you breed from is automatically recorded here (newest first). Click any fossil to rewind to it.</li>
+          <li><strong>⭐ Gallery</strong> — your personally starred favourites. Star them via ☆ on the parent cell.</li>
+          <li><strong>📖 Classics</strong> — curated preset creatures to use as starting points.</li>
+          <li><strong>⏬</strong> saves a list or brood to file · <strong>⏫</strong> loads it back · <strong>🗑</strong> clears the list.</li>
+        </ul>
+
+        <h3>Export &amp; navigate</h3>
+        <ul>
+          <li><strong>📸 Screenshot</strong> — downloads the current brood as a PNG image.</li>
+          <li><strong>⚛️ Creator</strong> — opens the Biomorph Creator in a new tab to sculpt a custom starting genome, then import it here via ⭐ Gallery → ⏫.</li>
+        </ul>
+
+        <div class="modal-divider"></div>
+
+        <h3>Author &amp; License</h3>
+        <p>Sergio Rojas-Galeano (v1.0) · Concept by Richard Dawkins · MIT License</p>
+        <div class="license-block">MIT License<br><br>
+Copyright (c) 2026 Sergio Rojas-Galeano<br><br>
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:<br><br>
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.<br><br>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Title -->
+  <div class="titlebar">
+    <div class="title-left">
+      <span class="app-title">Biomorph Evolver</span>
+      <span class="title-vsep"></span>
+      <span class="app-sub">Inspired by R. Dawkins · The Blind Watchmaker</span>
+    </div>
+    <button class="about-btn" onclick="openModal()" title="About &amp; user guide">i</button>
+  </div>
+
+  <!-- Controls — row 1: Genes, Turbulence, Leap -->
+  <div class="ctrlbar">
+    <div class="ctrl-row">
+      <span class="cl">Genes</span>
+      <label class="radio-opt"><input type="radio" name="gmode" value="friendly" checked onchange="setMode('friendly')"> friendly</label>
+      <label class="radio-opt"><input type="radio" name="gmode" value="original" onchange="setMode('original')"> original</label>
+      <div class="sep"></div>
+      <span class="cl">Turbulence</span>
+      <input type="range" min="1" max="8" step="1" value="1" id="sl-turb"
+        oninput="turbulence=parseInt(this.value);document.getElementById('vt').textContent=turbulence;redrawNoEvolve()">
+      <span class="cv" id="vt">1</span>
+      <div class="sep"></div>
+      <span class="cl">Leap</span>
+      <input type="range" min="1" max="9" step="1" value="1" id="sl-leap"
+        oninput="leap=parseInt(this.value);document.getElementById('vl').textContent=leap;redrawNoEvolve()">
+      <span class="cv" id="vl">1</span>
+    </div>
+    <!-- Controls — row 2: Brood, Genome, Labels, Legend -->
+    <div class="ctrl-row">
+      <span class="cl">Brood</span>
+      <div class="bropts">
+        <div class="bopt" data-b="1x3" onclick="setBrood('1x3')">1×3</div>
+        <div class="bopt on" data-b="3x3" onclick="setBrood('3x3')">3×3</div>
+        <div class="bopt" data-b="1x5" onclick="setBrood('1x5')">1×5</div>
+        <div class="bopt" data-b="5x5" onclick="setBrood('5x5')">5×5</div>
+      </div>
+      <div class="sep"></div>
+      <label class="chklbl"><input type="checkbox" id="chk-genome" onchange="showGenome=this.checked;redrawNoEvolve()"> genome</label>
+      <label class="chklbl" id="labels-wrap"><input type="checkbox" id="chk-labels" checked onchange="showLabels=this.checked;redrawNoEvolve()"> labels</label>
+      <div class="sep" id="legend-sep"></div>
+      <div class="legend" id="gene-legend">
+        <span class="leg-item"><b>Cx</b> complexity</span>
+        <span class="leg-item"><b>Sp</b> spread</span>
+        <span class="leg-item"><b>Ht</b> height</span>
+        <span class="leg-item"><b>Ta</b> taper</span>
+        <span class="leg-item"><b>Sw</b> sprawl</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gallery tabs -->
+  <div class="gallery-section">
+    <div class="gtabbar">
+      <div class="gtab act" id="tab-fossil"  onclick="switchTab('fossil')">🦴 Fossils</div>
+      <div class="gtab"     id="tab-gallery" onclick="switchTab('gallery')">⭐ Gallery</div>
+      <div class="gtab"     id="tab-classic" onclick="switchTab('classic')">📖 Classics</div>
+      <div class="tab-btns">
+        <button class="iob"     id="btn-tab-save"  title="Save list to file"   onclick="saveCurrentTab()">⏬</button>
+        <button class="iob"     id="btn-tab-open"  title="Load list from file" onclick="openTabFile()">⏫</button>
+        <button class="iob del" id="btn-tab-clear" title="Clear list"          onclick="clearCurrentTab()">🗑</button>
+      </div>
+    </div>
+    <div class="gallery-row" id="gallery-row"></div>
+  </div>
+
+  <!-- Work area -->
+  <div class="work-area">
+    <div class="mosaic-wrap">
+      <div class="mosaic" id="mosaic"></div>
+    </div>
+    <div class="side-toolbar">
+      <div class="gen-pill" id="gen-pill">1<span class="gen-lbl">gen</span></div>
+      <div class="tb-sep"></div>
+      <button class="siob hi-green" title="Random genome"                                   onclick="doRandom()">🎲</button>
+      <button class="siob hi-amber" title="Reset to archetype"                      onclick="doRestart()">✴️</button>
+      <div class="tb-sep"></div>
+      <button class="siob"          title="Save brood to file"                              onclick="saveGeneration()">⏬</button>
+      <button class="siob"          title="Load brood from file"                            onclick="openGenFile()">⏫</button>
+      <button class="siob hi-blue"  title="Screenshot brood as PNG"                         onclick="exportPNG()">📸</button>
+      <div class="tb-sep"></div>
+      <button class="siob"          title="Open Biomorph Creator in a new tab"              onclick="openCreator()">⚛️</button>
+    </div>
+  </div>
+</div>
+
+<!-- hidden file inputs -->
+<input type="file" id="fi-tab" accept=".json" style="display:none">
+<input type="file" id="fi-gen" accept=".json" style="display:none">
+
+<script>
+/* ── Gene tables ── */
+const F_SHORT    = ['Cx','Sp','Ht','Ta','Sw'];
+/* Archetypical Dawkins genome from The Blind Watchmaker:
+   9-gene: [-6,-6,-6,-8,-4,0,4,8,5]
+   Friendly approximation: cx=5,sp=-6,ht=-8,ta=-9,sw=8 */
+const F_DEFAULTS = [5,-6,-8,-9,8];
+const F_ARCHETYPE = [5,-6,-8,-9,8];
+const F_RANGES   = [[3,9],[-9,9],[-9,9],[-9,9],[-9,9]];
+const O_DEFAULTS = [-6,-6,-6,-8,-4,0,4,8,5];
+const O_ARCHETYPE = [-6,-6,-6,-8,-4,0,4,8,5];
+const O_RANGES   = [[-9,9],[-9,9],[-9,9],[-9,9],[-9,9],[-9,9],[-9,9],[-9,9],[3,9]];
+
+const CLASSICS = [
+  {name:'Cricket',  o:[0,1,-5,0,-3,9,1,-4,7]},
+  {name:'Fern',     o:[-4,-4,-7,-6,-9,-6,-4,0,9]},
+  {name:'Spider',   o:[8,-8,-1,-1,-3,-5,-8,-5,5]},
+  {name:'Bat',      o:[-8,-5,-3,-4,-3,-5,-6,0,6]},
+  {name:'Pyramid',  o:[-9,-3,9,0,5,1,4,0,9]},
+  {name:'Scorpio',  o:[-4,6,1,-8,-4,8,-7,5,7]},
+  {name:'Beetle',   o:[3,-6,2,8,-8,-1,9,8,5]},
+  {name:'Tree',     o:[-7,-4,5,-4,-9,-3,-8,-3,5]},
+  {name:'Crab',     o:[-8,-5,3,2,3,7,-5,-9,6]},
+];
+
+/* ── Drawing engine ── */
+function expand(f){
+  const[cx,sp,ht,ta,sw]=f, t=ta/9;
+  return[
+    Math.round(sp), Math.round(sp*.7), Math.round(sp*.4),
+    ht, ht,
+    Math.round(ht*(1+t)),
+    Math.round(ht*(1+t)*(1+t*.5)),
+    sw, cx
+  ];
+}
+function getDxDy(g){
+  return{
+    dx:[-g[1],-g[0],0,g[0],g[1],g[2],0,-g[2]],
+    dy:[ g[5], g[4],g[3],g[4],g[5],g[6],g[7],g[6]]
+  };
+}
+function computeBounds(g){
+  const{dx,dy}=getDxDy(g), len=g[8];
+  let x0=0,x1=0,y0=0,y1=0;
+  function walk(x,y,l,d){
+    const x2=x+l*dx[d], y2=y+l*dy[d];
+    x0=Math.min(x0,x2); x1=Math.max(x1,x2);
+    y0=Math.min(y0,y2); y1=Math.max(y1,y2);
+    if(l>0){walk(x2,y2,l-1,(d+7)%8); walk(x2,y2,l-1,(d+1)%8);}
+  }
+  walk(0,0,len,2);
+  return{x0,x1,y0,y1};
+}
+function drawBiomorph(canvas, g, pad, strokeColor){
+  pad = pad ?? 4;
+  const ctx=canvas.getContext('2d'), W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  ctx.strokeStyle = strokeColor || (dark ? 'rgba(220,215,200,0.90)' : 'rgba(26,24,20,0.85)');
+  ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=1;
+  const{dx,dy}=getDxDy(g), len=g[8];
+  if(len<1) return;
+  const b=computeBounds(g);
+  const sc=Math.min((W-pad*2)/Math.max(b.x1-b.x0,1),(H-pad*2)/Math.max(b.y1-b.y0,1));
+  const ox=W/2-(b.x0+b.x1)/2*sc, oy=H/2-(b.y0+b.y1)/2*sc;
+  function tree(x,y,l,d){
+    const x2=x+l*dx[d], y2=y+l*dy[d];
+    ctx.beginPath(); ctx.moveTo(ox+x*sc,oy+y*sc); ctx.lineTo(ox+x2*sc,oy+y2*sc); ctx.stroke();
+    if(l>0){tree(x2,y2,l-1,(d+7)%8); tree(x2,y2,l-1,(d+1)%8);}
+  }
+  tree(0,0,len,2);
+}
+
+/* ── State ── */
+let mode       = 'friendly';
+let parent     = [...F_DEFAULTS];
+let parentO    = [...O_DEFAULTS];
+let generation = 1;
+let savedGallery  = [];
+let fossilHistory = [];
+let currentTab = 'fossil';
+let brood      = '3x3';
+let turbulence = 1, leap = 1;
+let showGenome = false, showLabels = true;
+let offspringPool = [];
+
+const clamp   = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
+const randInt = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+
+function mutateFriendly(f,turb,lp){
+  const c=[...f], n=clamp(turb,1,5);
+  [...Array(5).keys()].sort(()=>Math.random()-.5).slice(0,n)
+    .forEach(i=>{ const[lo,hi]=F_RANGES[i]; c[i]=clamp(c[i]+(Math.random()<.5?1:-1)*randInt(1,lp),lo,hi); });
+  return c;
+}
+function mutateOriginal(o,turb,lp){
+  const c=[...o], n=clamp(turb,1,8);
+  [...Array(9).keys()].sort(()=>Math.random()-.5).slice(0,n)
+    .forEach(i=>{ const[lo,hi]=O_RANGES[i]; c[i]=clamp(c[i]+(Math.random()<.5?1:-1)*randInt(1,lp),lo,hi); });
+  return c;
+}
+
+const getDrawGenes9   = () => mode==='friendly' ? expand(parent) : parentO;
+const getActiveParent = () => mode==='friendly' ? parent : parentO;
+const genomeKey       = () => (mode==='friendly' ? parent : parentO).join(',');
+const isStarred       = () => savedGallery.some(it=>(mode==='friendly'?it.f:it.o).join(',')===genomeKey());
+
+/* ── Star update (no full redraw) ── */
+function updateParentStar(){
+  const star = document.querySelector('.cell.par .cell-star');
+  if(!star) return;
+  const s = isStarred();
+  star.textContent = s ? '★' : '☆';
+  star.classList.toggle('starred', s);
+}
+
+/* ── Legend & tab buttons ── */
+function updateLegend(){
+  const isFr = mode==='friendly';
+  document.getElementById('labels-wrap').style.display = isFr ? '' : 'none';
+  document.getElementById('legend-sep').style.display  = isFr ? '' : 'none';
+  document.getElementById('gene-legend').style.display = (isFr&&showLabels) ? 'flex' : 'none';
+}
+function updateTabBtns(){
+  const isC = currentTab==='classic';
+  document.getElementById('btn-tab-save').disabled  = isC;
+  document.getElementById('btn-tab-open').disabled  = isC;
+  document.getElementById('btn-tab-clear').disabled = isC;
+}
+
+/* ── Layout ── */
+function getBroodLayout(){
+  if(brood==='1x3') return{cols:3,rows:1,px:1,py:0};
+  if(brood==='3x3') return{cols:3,rows:3,px:1,py:1};
+  if(brood==='1x5') return{cols:5,rows:1,px:2,py:0};
+  return{cols:5,rows:5,px:2,py:2};
+}
+function getCellPx(){
+  if(brood==='1x3') return 174;
+  if(brood==='3x3') return 148;
+  if(brood==='1x5') return 116;
+  return 98;
+}
+function totalOffspring(){ const{cols,rows}=getBroodLayout(); return cols*rows-1; }
+
+function generatePool(){
+  offspringPool = [];
+  for(let i=0;i<totalOffspring();i++){
+    if(mode==='friendly'){
+      const f=mutateFriendly(parent,turbulence,leap);
+      offspringPool.push({f, o:expand(f), g9:expand(f)});
+    } else {
+      const o=mutateOriginal(parentO,turbulence,leap);
+      offspringPool.push({f:[...F_DEFAULTS], o, g9:[...o]});
+    }
+  }
+}
+
+/* ── Mosaic render ── */
+function renderMosaic(){
+  document.getElementById('gen-pill').innerHTML = generation+'<span class="gen-lbl">gen</span>';
+  updateLegend(); updateTabBtns();
+  const{cols,rows,px,py} = getBroodLayout();
+  const cellPx = getCellPx();
+  const headerH = 18;
+  const isFr = mode==='friendly';
+  const footerH = (showGenome?16:0) + (isFr&&showLabels?18:0);
+  const cvH = Math.max(34, cellPx-headerH-footerH-2);
+  const cvW = cellPx-6;
+  const mosaic = document.getElementById('mosaic');
+  mosaic.style.gridTemplateColumns = 'repeat('+cols+','+cellPx+'px)';
+  mosaic.innerHTML = '';
+  let poolIdx = 0;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const isPar = (r===py && c===px);
+      const cell  = document.createElement('div');
+      cell.className = 'cell'+(isPar?' par':'');
+      cell.style.height = cellPx+'px';
+
+      if(isPar){
+        const lbl = document.createElement('div');
+        lbl.className = 'par-lbl'; lbl.textContent = 'parent';
+        cell.appendChild(lbl);
+        const star = document.createElement('span');
+        star.className = 'cell-star'+(isStarred()?' starred':'');
+        star.textContent = isStarred() ? '★' : '☆';
+        star.title = 'Save to gallery';
+        star.addEventListener('click', e=>{ e.stopPropagation(); starCurrent(); });
+        cell.appendChild(star);
+      } else {
+        const idx = document.createElement('span');
+        idx.className = 'cell-idx';
+        idx.textContent = String(poolIdx+1);
+        cell.appendChild(idx);
+      }
+
+      const cv = document.createElement('canvas');
+      cv.width=cvW; cv.height=cvH; cv.style.marginTop=headerH+'px';
+      cell.appendChild(cv);
+
+      let genes9, displayArr, offItem;
+      if(isPar){
+        genes9 = getDrawGenes9(); displayArr = isFr ? parent : null;
+      } else {
+        offItem = offspringPool[poolIdx];
+        genes9 = isFr ? offItem.g9 : offItem.o;
+        displayArr = isFr ? offItem.f : null;
+        const cap = offItem;
+        cell.addEventListener('click', ()=>breed(cap));
+        poolIdx++;
+      }
+      drawBiomorph(cv, genes9, 4);
+
+      if(showGenome){
+        const gl = document.createElement('div'); gl.className='cell-genome';
+        const arr = isFr ? (isPar?parent:(offItem?.f||parent)) : genes9;
+        gl.textContent = '['+arr.join(', ')+']';
+        cell.appendChild(gl);
+      }
+      if(isFr && showLabels && displayArr){
+        const strip = document.createElement('div'); strip.className='gstrip';
+        F_SHORT.forEach((s,i)=>{
+          const t = document.createElement('div'); t.className='gtag';
+          t.textContent = s+':'+displayArr[i]; strip.appendChild(t);
+        });
+        cell.appendChild(strip);
+      }
+      mosaic.appendChild(cell);
+    }
+  }
+}
+
+const redrawNoEvolve = () => renderMosaic();
+const fullRender     = () => { generatePool(); renderMosaic(); };
+
+/* ── Breed ── */
+function breed(item){
+  addHistory(getActiveParent());
+  if(mode==='friendly') parent  = [...item.f];
+  else                   parentO = [...item.o];
+  generation++;
+  fullRender();
+  if(currentTab==='fossil') renderGallery();
+}
+
+/* ── Star ── */
+function starCurrent(){
+  const key = genomeKey();
+  if(savedGallery.some(it=>(mode==='friendly'?it.f:it.o).join(',')===key)) return;
+  const g9 = getDrawGenes9();
+  savedGallery.push({f:[...parent], o:[...parentO], g9:[...g9], name:'★'+(savedGallery.length+1)});
+  updateParentStar();
+  if(currentTab==='gallery') renderGallery();
+}
+
+/* ── Fossil history ── */
+function addHistory(genes){
+  fossilHistory.unshift({snap:[...genes], snapMode:mode, snapGen:generation});
+}
+function renderFossils(){
+  const row = document.getElementById('gallery-row'); row.innerHTML='';
+  if(fossilHistory.length===0){
+    const h=document.createElement('div'); h.className='hint-empty';
+    h.textContent='breed from offspring to build a fossil record'; row.appendChild(h); return;
+  }
+  fossilHistory.forEach(({snap,snapMode,snapGen})=>{
+    const g9 = snapMode==='friendly' ? expand(snap) : snap;
+    row.appendChild(makeThumb(g9,'g'+snapGen,()=>{
+      if(snapMode==='friendly') parent=[...snap]; else parentO=[...snap];
+      generation=snapGen; fullRender();
+      if(currentTab==='fossil') renderGallery();
+    }));
+  });
+}
+
+/* ── Gallery render ── */
+function renderGallery(){
+  if(currentTab==='fossil'){ renderFossils(); return; }
+  const row = document.getElementById('gallery-row'); row.innerHTML='';
+  if(currentTab==='gallery'){
+    if(savedGallery.length===0){
+      const h=document.createElement('div'); h.className='hint-empty';
+      h.textContent='click ☆ on the parent cell to save'; row.appendChild(h);
+    } else {
+      savedGallery.forEach(item=>row.appendChild(makeThumb(item.g9,item.name,()=>{
+        parent=[...item.f]; parentO=[...item.o];
+        generation=1; fossilHistory=[];
+        fullRender(); renderGallery();
+      })));
+    }
+  } else {
+    /* Classics — load as parent correctly */
+    CLASSICS.forEach(item=>row.appendChild(makeThumb(item.o,item.name,()=>{
+      /* set both parentO and reconstruct a matching friendly parent */
+      parentO    = [...item.o];
+      parent     = [...F_DEFAULTS]; /* reset friendly; original mode will use parentO */
+      generation = 1; fossilHistory = [];
+      /* switch to original mode so the correct genome drives the render */
+      mode = 'original';
+      document.querySelectorAll('input[name="gmode"]').forEach(r=>r.checked=(r.value==='original'));
+      fullRender(); renderGallery();
+    })));
+  }
+}
+
+function makeThumb(g9,name,onclick){
+  const wrap=document.createElement('div'); wrap.className='gthumb';
+  const cv=document.createElement('canvas'); cv.width=44; cv.height=48;
+  drawBiomorph(cv,g9,3); wrap.appendChild(cv);
+  const lbl=document.createElement('span'); lbl.textContent=name; wrap.appendChild(lbl);
+  wrap.addEventListener('click',onclick); return wrap;
+}
+
+/* ── Tab switching ── */
+function switchTab(t){
+  currentTab = t;
+  ['fossil','gallery','classic'].forEach(id=>
+    document.getElementById('tab-'+id).classList.toggle('act',id===t));
+  updateTabBtns(); renderGallery();
+}
+
+/* ── Download helper (data URL — works everywhere) ── */
+function downloadData(content, filename, mime){
+  const isJson = !mime || mime==='application/json';
+  const dataUrl = isJson
+    ? 'data:application/json;charset=utf-8,'+encodeURIComponent(content)
+    : content; /* PNG: already a data URL */
+  const a = document.createElement('a');
+  a.href=dataUrl; a.download=filename; a.style.display='none';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ try{document.body.removeChild(a);}catch(e){} }, 500);
+}
+
+/* ── Save ── */
+function saveCurrentTab(){
+  if(currentTab==='fossil'){
+    downloadData(JSON.stringify({type:'biomorphs-fossils',version:1,entries:fossilHistory},null,2),
+      'biomorphs-fossils.json');
+  } else if(currentTab==='gallery'){
+    downloadData(JSON.stringify({type:'biomorphs-gallery',version:1,entries:savedGallery},null,2),
+      'biomorphs-gallery.json');
+  }
+}
+function saveGeneration(){
+  const payload={
+    type:'biomorphs-generation',version:1,
+    generation,mode,brood,turbulence,leap,
+    parent:[...parent], parentO:[...parentO],
+    offspringPool: offspringPool.map(it=>({f:it.f,o:it.o}))
+  };
+  downloadData(JSON.stringify(payload,null,2), 'biomorphs-gen'+generation+'.json');
+}
+
+/* ── Open ── */
+function openTabFile(){ document.getElementById('fi-tab').value=''; document.getElementById('fi-tab').click(); }
+function openGenFile(){ document.getElementById('fi-gen').value=''; document.getElementById('fi-gen').click(); }
+
+document.getElementById('fi-tab').addEventListener('change',function(){
+  const file=this.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(currentTab==='fossil'){
+        if(data.type!=='biomorphs-fossils') throw new Error('Not a fossils file');
+        fossilHistory=data.entries||[];
+      } else if(currentTab==='gallery'){
+        if(data.type!=='biomorphs-gallery') throw new Error('Not a gallery file');
+        savedGallery=data.entries||[];
+      }
+      renderGallery();
+    }catch(err){ alert('Could not load:\n'+err.message); }
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('fi-gen').addEventListener('change',function(){
+  const file=this.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(data.type!=='biomorphs-generation') throw new Error('Not a generation file');
+      generation  = data.generation||1;
+      mode        = data.mode||'friendly';
+      brood       = data.brood||'3x3';
+      turbulence  = data.turbulence||1;
+      leap        = data.leap||1;
+      parent      = data.parent||[...F_DEFAULTS];
+      parentO     = data.parentO||[...O_DEFAULTS];
+      document.getElementById('sl-turb').value=turbulence;
+      document.getElementById('vt').textContent=turbulence;
+      document.getElementById('sl-leap').value=leap;
+      document.getElementById('vl').textContent=leap;
+      document.querySelectorAll('input[name="gmode"]').forEach(r=>r.checked=(r.value===mode));
+      document.querySelectorAll('.bopt').forEach(el=>el.classList.toggle('on',el.dataset.b===brood));
+      offspringPool=(data.offspringPool||[]).map(it=>({
+        f:it.f||[...F_DEFAULTS], o:it.o||[...O_DEFAULTS],
+        g9:mode==='friendly'?expand(it.f||F_DEFAULTS):(it.o||O_DEFAULTS)
+      }));
+      renderMosaic();
+    }catch(err){ alert('Could not load:\n'+err.message); }
+  };
+  reader.readAsText(file);
+});
+
+/* ── Clear ── */
+function clearCurrentTab(){
+  if(currentTab==='fossil')       fossilHistory=[];
+  else if(currentTab==='gallery') savedGallery=[];
+  renderGallery();
+  if(currentTab==='gallery') redrawNoEvolve();
+}
+
+/* ── PNG Export ── */
+function exportPNG(){
+  const{cols,rows,px,py}=getBroodLayout();
+  const cellPx=140, pad=6;
+  const W=cols*cellPx, H=rows*cellPx;
+  const off=document.createElement('canvas'); off.width=W; off.height=H;
+  const ctx=off.getContext('2d');
+  const dark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  ctx.fillStyle=dark?'#1c1b19':'#f5f3ee'; ctx.fillRect(0,0,W,H);
+  const stroke  = dark?'rgba(220,215,200,0.88)':'rgba(26,24,20,0.84)';
+  const divider = dark?'rgba(255,255,255,.45)':'rgba(0,0,0,.55)';
+  let poolIdx=0;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const isPar=(r===py&&c===px);
+      const cx=c*cellPx, cy=r*cellPx;
+      ctx.fillStyle=dark?(isPar?'#252420':'#1c1b19'):(isPar?'#e8e5dd':'#f5f3ee');
+      ctx.fillRect(cx,cy,cellPx,cellPx);
+      ctx.strokeStyle=divider; ctx.lineWidth=0.5;
+      ctx.strokeRect(cx+.25,cy+.25,cellPx-.5,cellPx-.5);
+      const g9=isPar?getDrawGenes9():(mode==='friendly'?(offspringPool[poolIdx]?.g9||getDrawGenes9()):(offspringPool[poolIdx]?.o||getDrawGenes9()));
+      if(!isPar) poolIdx++;
+      /* draw biomorph directly into export canvas */
+      const b=computeBounds(g9);
+      const drawW=cellPx-pad*2, drawH=cellPx-pad*2;
+      const sc=Math.min(drawW/Math.max(b.x1-b.x0,1), drawH/Math.max(b.y1-b.y0,1));
+      const ox=cx+pad+drawW/2-(b.x0+b.x1)/2*sc;
+      const oy=cy+pad+drawH/2-(b.y0+b.y1)/2*sc;
+      const{dx,dy}=getDxDy(g9);
+      ctx.strokeStyle=stroke; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=1;
+      function tree(x,y,l,d){
+        const x2=x+l*dx[d], y2=y+l*dy[d];
+        ctx.beginPath(); ctx.moveTo(ox+x*sc,oy+y*sc); ctx.lineTo(ox+x2*sc,oy+y2*sc); ctx.stroke();
+        if(l>0){tree(x2,y2,l-1,(d+7)%8); tree(x2,y2,l-1,(d+1)%8);}
+      }
+      if(g9[8]>=1) tree(0,0,g9[8],2);
+      /* badge */
+      ctx.font=isPar?'bold 11px DM Mono,monospace':'10px DM Mono,monospace';
+      ctx.fillStyle=dark?'rgba(255,255,255,.75)':'rgba(0,0,0,.65)';
+      const badge=isPar?(isStarred()?'★':'◆'):String(poolIdx);
+      ctx.fillText(badge,cx+cellPx-15,cy+13);
+    }
+  }
+  ctx.font='9px DM Sans,sans-serif';
+  ctx.fillStyle=dark?'rgba(255,255,255,.35)':'rgba(0,0,0,.40)';
+  ctx.fillText('Biomorph Evolver · gen '+generation, 5, H-5);
+  downloadData(off.toDataURL('image/png'), 'biomorphs-gen'+generation+'.png', 'image/png');
+}
+
+/* ── Controls ── */
+function setMode(m){ mode=m; updateLegend(); redrawNoEvolve(); }
+function setBrood(b){
+  brood=b;
+  document.querySelectorAll('.bopt').forEach(el=>el.classList.toggle('on',el.dataset.b===b));
+  fullRender();
+}
+function doRandom(){
+  fossilHistory=[]; generation=1;
+  parent   =[randInt(3,9),randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(-9,9)];
+  parentO  =[randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(3,9)];
+  fullRender(); if(currentTab==='fossil') renderGallery();
+}
+function doRestart(){
+  fossilHistory=[]; generation=1;
+  parent=[...F_ARCHETYPE]; parentO=[...O_ARCHETYPE];
+  fullRender(); if(currentTab==='fossil') renderGallery();
+}
+
+/* ── Cross-invoke ── */
+function openCreator(){
+  window.open('biomorph_creator.html', '_blank');
+}
+
+function openModal()  { document.getElementById('modal-overlay').classList.add('open'); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawNoEvolve);
+switchTab('fossil');
+fullRender();
+</script>
+</body>
+</html>

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biomorphs Suite · Sergio Rojas-Galeano</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink:       #1a1510;
+  --ink-2:     #3d3628;
+  --ink-3:     #6b6050;
+  --paper:     #f4f0e6;
+  --paper-2:   #ece7d8;
+  --paper-3:   #e2dbc8;
+  --accent:    #c85a14;
+  --accent-2:  #8b3a0a;
+  --gold:      #b8860b;
+  --blue:      #1a4a7a;
+  --green:     #2a5a2a;
+  --ff-serif:  'Playfair Display', Georgia, serif;
+  --ff-mono:   'DM Mono', monospace;
+  --ff-sans:   'DM Sans', system-ui, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--ff-sans);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Grain texture overlay ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+
+/* ── Top rule ── */
+.top-rule {
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent), var(--gold), var(--accent), var(--accent-2));
+}
+
+/* ── Nav ── */
+nav {
+  position: relative; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 48px;
+  border-bottom: 1px solid var(--paper-3);
+}
+.nav-logo {
+  font-family: var(--ff-mono); font-size: 11px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.nav-links { display: flex; gap: 32px; }
+.nav-links a {
+  font-family: var(--ff-mono); font-size: 10px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-3); text-decoration: none;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--accent); }
+
+/* ── Hero ── */
+.hero {
+  position: relative; z-index: 1;
+  padding: 80px 48px 60px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 60px; align-items: center;
+  max-width: 1100px; margin: 0 auto;
+}
+
+.hero-text { position: relative; }
+
+.eyebrow {
+  font-family: var(--ff-mono); font-size: 10px; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+}
+.eyebrow::before {
+  content: ''; display: block; width: 28px; height: 1px; background: var(--accent);
+}
+
+h1 {
+  font-family: var(--ff-serif); font-size: clamp(42px, 5vw, 64px);
+  font-weight: 700; line-height: 1.05; letter-spacing: -.02em;
+  color: var(--ink); margin-bottom: 10px;
+}
+h1 em { font-style: italic; color: var(--accent); }
+
+.tagline {
+  font-family: var(--ff-serif); font-size: 16px; font-style: italic;
+  color: var(--ink-3); margin-bottom: 28px; line-height: 1.5;
+}
+
+.hero-desc {
+  font-size: 14px; line-height: 1.75; color: var(--ink-2);
+  margin-bottom: 36px; max-width: 440px;
+}
+
+.cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border-radius: 3px;
+  font-family: var(--ff-mono); font-size: 11px; letter-spacing: .12em;
+  text-transform: uppercase; text-decoration: none;
+  transition: all .2s; cursor: pointer; border: none;
+}
+.btn-primary {
+  background: var(--accent); color: #fff;
+}
+.btn-primary:hover { background: var(--accent-2); transform: translateY(-1px); }
+.btn-secondary {
+  background: transparent; color: var(--ink-2);
+  border: 1px solid var(--paper-3);
+}
+.btn-secondary:hover { border-color: var(--ink-3); color: var(--ink); }
+.btn-ghost {
+  background: transparent; color: var(--blue);
+  border: 1px solid rgba(26,74,122,.25);
+}
+.btn-ghost:hover { background: rgba(26,74,122,.06); border-color: var(--blue); }
+
+/* ── Hero canvas (animated biomorph) ── */
+.hero-visual {
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.canvas-frame {
+  position: relative;
+  width: 380px; height: 380px;
+  background: var(--paper-2);
+  border: 1px solid var(--paper-3);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.04), 0 12px 40px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.6);
+  overflow: hidden;
+}
+.canvas-frame canvas { display: block; }
+.canvas-label {
+  position: absolute; bottom: 12px; left: 14px;
+  font-family: var(--ff-mono); font-size: 9px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink-3); opacity: .6;
+}
+.canvas-genome {
+  position: absolute; bottom: 12px; right: 14px;
+  font-family: var(--ff-mono); font-size: 9px; color: var(--ink-3); opacity: .5;
+}
+
+/* corner ticks */
+.canvas-frame::before, .canvas-frame::after {
+  content: ''; position: absolute; width: 14px; height: 14px;
+  border-color: var(--accent); border-style: solid; opacity: .4;
+}
+.canvas-frame::before { top: 8px; left: 8px; border-width: 1px 0 0 1px; }
+.canvas-frame::after  { bottom: 8px; right: 8px; border-width: 0 1px 1px 0; }
+
+/* ── Divider ── */
+.section-rule {
+  max-width: 1100px; margin: 0 auto;
+  height: 1px; background: var(--paper-3);
+}
+
+/* ── Apps section ── */
+.apps-section {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+  padding: 64px 48px;
+}
+.section-header {
+  display: flex; align-items: baseline; gap: 16px;
+  margin-bottom: 36px;
+}
+.section-num {
+  font-family: var(--ff-mono); font-size: 9px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--accent); opacity: .7;
+}
+.section-title {
+  font-family: var(--ff-serif); font-size: 28px; font-weight: 700;
+  color: var(--ink); letter-spacing: -.01em;
+}
+
+.apps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+.app-card {
+  background: var(--paper-2);
+  border: 1px solid var(--paper-3);
+  border-radius: 6px;
+  padding: 32px;
+  position: relative; overflow: hidden;
+  transition: box-shadow .25s, transform .25s;
+  text-decoration: none; color: inherit; display: block;
+}
+.app-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,.1);
+  transform: translateY(-2px);
+}
+.app-card::after {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+}
+.app-card.creator::after { background: linear-gradient(90deg, var(--accent), var(--gold)); }
+.app-card.evolver::after { background: linear-gradient(90deg, var(--blue), var(--green)); }
+
+.card-icon { font-size: 32px; margin-bottom: 16px; display: block; }
+.card-title {
+  font-family: var(--ff-serif); font-size: 22px; font-weight: 700;
+  color: var(--ink); margin-bottom: 8px;
+}
+.card-sub {
+  font-family: var(--ff-mono); font-size: 9px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px;
+}
+.card-desc {
+  font-size: 13px; line-height: 1.7; color: var(--ink-2); margin-bottom: 24px;
+}
+.card-features { list-style: none; margin-bottom: 24px; }
+.card-features li {
+  font-size: 12px; color: var(--ink-3); padding: 4px 0;
+  border-bottom: 1px solid var(--paper-3);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-features li::before { content: '—'; color: var(--accent); opacity: .6; font-size: 10px; }
+.card-link {
+  font-family: var(--ff-mono); font-size: 10px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent); text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: gap .2s;
+}
+.app-card:hover .card-link { gap: 10px; }
+
+/* ── Concept section ── */
+.concept-section {
+  position: relative; z-index: 1;
+  background: var(--paper-2);
+  border-top: 1px solid var(--paper-3);
+  border-bottom: 1px solid var(--paper-3);
+}
+.concept-inner {
+  max-width: 1100px; margin: 0 auto;
+  padding: 64px 48px;
+  display: grid; grid-template-columns: 1fr 2fr; gap: 60px; align-items: start;
+}
+.concept-aside {
+  font-family: var(--ff-serif); font-size: 15px; font-style: italic;
+  color: var(--ink-3); line-height: 1.7;
+  border-left: 2px solid var(--accent); padding-left: 20px;
+}
+.concept-aside cite {
+  display: block; margin-top: 12px;
+  font-family: var(--ff-mono); font-size: 9px; font-style: normal;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); opacity: .7;
+}
+.concept-body { }
+.concept-body p {
+  font-size: 14px; line-height: 1.8; color: var(--ink-2); margin-bottom: 16px;
+}
+.concept-body p:last-child { margin-bottom: 0; }
+
+/* ── Gene table ── */
+.gene-section {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+  padding: 64px 48px;
+}
+.gene-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+  margin-top: 28px; border: 1px solid var(--paper-3); border-radius: 4px; overflow: hidden;
+}
+.gene-cell {
+  background: var(--paper-2); padding: 18px 20px;
+  border-right: 1px solid var(--paper-3); border-bottom: 1px solid var(--paper-3);
+}
+.gene-cell:nth-child(3n) { border-right: none; }
+.gene-id {
+  font-family: var(--ff-mono); font-size: 10px; letter-spacing: .1em;
+  color: var(--accent); margin-bottom: 4px;
+}
+.gene-name { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 3px; }
+.gene-desc { font-size: 11px; color: var(--ink-3); line-height: 1.5; }
+
+/* ── Classics strip ── */
+.classics-section {
+  position: relative; z-index: 1;
+  background: var(--ink);
+  padding: 56px 48px;
+}
+.classics-inner { max-width: 1100px; margin: 0 auto; }
+.classics-section .section-title { color: var(--paper); }
+.classics-section .section-num { color: var(--gold); }
+.classics-strip {
+  display: flex; gap: 20px; margin-top: 32px;
+  overflow-x: auto; padding-bottom: 8px;
+}
+.classic-chip {
+  flex-shrink: 0;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 4px; padding: 12px 16px;
+  text-align: center; min-width: 80px;
+}
+.classic-chip canvas { display: block; margin: 0 auto 8px; }
+.classic-name {
+  font-family: var(--ff-mono); font-size: 9px; letter-spacing: .1em;
+  text-transform: uppercase; color: rgba(255,255,255,.5);
+}
+
+/* ── About grid ── */
+.about-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+  margin-top: 28px; border: 1px solid var(--paper-3); border-radius: 4px; overflow: hidden;
+}
+.about-card {
+  background: var(--paper-2); padding: 24px 22px;
+  border-right: 1px solid var(--paper-3);
+}
+.about-card:last-child { border-right: none; }
+.about-label {
+  font-family: var(--ff-mono); font-size: 9px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+}
+.about-name {
+  font-family: var(--ff-serif); font-size: 16px; font-weight: 700;
+  color: var(--ink); margin-bottom: 6px;
+}
+.about-email {
+  font-family: var(--ff-mono); font-size: 12px; color: var(--blue);
+  text-decoration: none; display: block; margin-bottom: 6px;
+  transition: color .2s;
+}
+.about-email:hover { color: var(--accent); }
+.about-detail {
+  font-size: 11px; color: var(--ink-3); line-height: 1.5;
+}
+
+/* ── Footer ── */
+footer {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--paper-3);
+  padding: 32px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+.footer-copy {
+  font-family: var(--ff-mono); font-size: 10px; letter-spacing: .1em;
+  color: var(--ink-3);
+}
+.footer-links { display: flex; gap: 24px; }
+.footer-links a {
+  font-family: var(--ff-mono); font-size: 10px; letter-spacing: .1em;
+  color: var(--ink-3); text-decoration: none; transition: color .2s;
+}
+.footer-links a:hover { color: var(--accent); }
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-text > * { opacity: 0; animation: fadeUp .6s forwards; }
+.eyebrow        { animation-delay: .1s; }
+h1              { animation-delay: .2s; }
+.tagline        { animation-delay: .3s; }
+.hero-desc      { animation-delay: .4s; }
+.cta-row        { animation-delay: .5s; }
+.hero-visual    { opacity: 0; animation: fadeUp .8s .3s forwards; }
+
+/* ── Responsive ── */
+@media (max-width: 780px) {
+  nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  .hero { grid-template-columns: 1fr; padding: 48px 24px 36px; gap: 36px; }
+  .canvas-frame { width: 100%; height: 280px; }
+  .apps-section, .gene-section { padding: 48px 24px; }
+  .apps-grid { grid-template-columns: 1fr; }
+  .concept-inner { grid-template-columns: 1fr; padding: 48px 24px; gap: 32px; }
+  .gene-grid { grid-template-columns: 1fr 1fr; }
+  .about-grid { grid-template-columns: 1fr 1fr; }
+  .classics-section { padding: 48px 24px; }
+  footer { padding: 24px; flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<div class="top-rule"></div>
+
+<nav>
+  <span class="nav-logo">Biomorphs Suite</span>
+  <div class="nav-links">
+    <a href="#apps">Apps</a>
+    <a href="#concept">Concept</a>
+    <a href="#genes">Genes</a>
+    <a href="#about">About</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="eyebrow">Interactive Evolution</div>
+    <h1>Bio<em>morphs</em> Suite</h1>
+    <p class="tagline">Complexity from simplicity, by selection alone.</p>
+    <p class="hero-desc">
+      A faithful recreation of Richard Dawkins's biomorphs from <em>The Blind Watchmaker</em> (1986).
+      Two interactive apps — a hands-on Creator and a generational Evolver — bring his landmark
+      computer experiment to life in your browser.
+    </p>
+    <div class="cta-row">
+      <a href="biomorph_evolver.html" class="btn btn-primary">▶ Launch Evolver</a>
+      <a href="biomorph_creator.html" class="btn btn-secondary">✎ Open Creator</a>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="canvas-frame">
+      <canvas id="hero-canvas" width="380" height="380"></canvas>
+      <span class="canvas-label">Live biomorph</span>
+      <span class="canvas-genome" id="hero-genome"></span>
+    </div>
+  </div>
+</section>
+
+<div class="section-rule"></div>
+
+<!-- Concept -->
+<section class="concept-section" id="concept">
+  <div class="concept-inner">
+    <div class="concept-aside">
+      "I can't see… the biomorphs without experiencing a feeling of wonder that such complexity…
+      can be generated by such a simple recursive procedure."
+      <cite>— Richard Dawkins, The Blind Watchmaker (1986)</cite>
+    </div>
+    <div class="concept-body">
+  <p>
+        In 1986, Richard Dawkins sparked an idea that would forever change the way we understand biological complexity. His biomorphs program—originally written in Pascal and run on a humble Macintosh—demonstrated something both profound and unsettling: that organic-looking, intricate, and surprisingly beautiful structures could emerge from just a handful of integer genes and a recursive algorithm, without any designer, without any purpose, and without any teleological guidance. Only cumulative selection.
+  </p>
+  
+  <p>
+Four decades later, that seminal experiment remains one of the most elegant and pedagogically powerful computational demonstrations of evolutionary theory. To celebrate the 40th anniversary of this concept, we present Biomorphs Suite: an interactive web-based reimplementation faithful to Dawkins’ original 9-gene model (1986), developed for educational and experimental purposes.
+  </p>
+    
+      <p>
+        The suite includes an “Evolver” mode that preserves the essence of Dawkins’s original framework while enhancing usability through a simplified 5-parameter interface for rapid exploration. It also features a library of classic evolved forms and a manual “Creator” mode, allowing users to design a biomorph manually and use it as the seed for the evolutionary process. The entire application runs client-side, requiring no installation or server overhead.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Apps -->
+<section class="apps-section" id="apps">
+  <div class="section-header">
+    <span class="section-num">01 / Apps</span>
+    <h2 class="section-title">Two ways to explore</h2>
+  </div>
+  <div class="apps-grid">
+
+    <a href="biomorph_creator.html" class="app-card creator">
+      <span class="card-icon">✎</span>
+      <div class="card-title">Biomorph Creator</div>
+      <div class="card-sub">Manual sculpting</div>
+      <p class="card-desc">Design a creature precisely by adjusting its genes with sliders. Choose between 5 intuitive friendly parameters or the raw 9-gene Dawkins genome. Export your creation directly into the Evolver.</p>
+      <ul class="card-features">
+        <li>Friendly (5-gene) and Original (9-gene) modes</li>
+        <li>Live canvas preview</li>
+        <li>🎲 Random · ✴️ Reset to archetype</li>
+        <li>⏬ Export · 📸 Screenshot</li>
+        <li>👽 One-click launch into Evolver</li>
+      </ul>
+      <span class="card-link">Open Creator →</span>
+    </a>
+
+    <a href="biomorph_evolver.html" class="app-card evolver">
+      <span class="card-icon">⬡</span>
+      <div class="card-title">Biomorph Evolver</div>
+      <div class="card-sub">Generational selection</div>
+      <p class="card-desc">Pick survivors, generation after generation. Each click selects an offspring that becomes the new parent — watch creatures drift, converge, or leap into unexpected forms across evolutionary time.</p>
+      <ul class="card-features">
+        <li>3×3, 1×3, 1×5, 5×5 brood sizes</li>
+        <li>Turbulence & Leap mutation controls</li>
+        <li>🦴 Fossil record · ⭐ Gallery · 📖 Classics</li>
+        <li>⏬ Save / ⏫ Load broods and lists</li>
+        <li>⚛️ One-click launch into Creator</li>
+      </ul>
+      <span class="card-link">Open Evolver →</span>
+    </a>
+
+  </div>
+</section>
+
+<!-- Genes -->
+<section class="gene-section" id="genes">
+  <div class="section-header">
+    <span class="section-num">02 / Genes</span>
+    <h2 class="section-title">The 9-gene genome</h2>
+  </div>
+  <div class="gene-grid">
+    <div class="gene-cell">
+      <div class="gene-id">g0</div>
+      <div class="gene-name">Inner spread</div>
+      <div class="gene-desc">Horizontal displacement of innermost branches</div>
+    </div>
+    <div class="gene-cell">
+      <div class="gene-id">g1</div>
+      <div class="gene-name">Mid spread</div>
+      <div class="gene-desc">Horizontal displacement of mid-level branches</div>
+    </div>
+    <div class="gene-cell">
+      <div class="gene-id">g2</div>
+      <div class="gene-name">Outer spread</div>
+      <div class="gene-desc">Horizontal displacement of outermost branches</div>
+    </div>
+    <div class="gene-cell">
+      <div class="gene-id">g3</div>
+      <div class="gene-name">Trunk length</div>
+      <div class="gene-desc">Vertical extent of the central trunk</div>
+    </div>
+    <div class="gene-cell">
+      <div class="gene-id">g4</div>
+      <div class="gene-name">Inner height</div>
+      <div class="gene-desc">Vertical extent of inner branch tier</div>
+    </div>
+    <div class="gene-cell">
+      <div class="gene-id">g5</div>
+      <div class="gene-name">Mid height</div>
+      <div class="gene-desc">Vertical extent of mid branch tier</div>
+    </div>
+    <div class="gene-cell">
+      <div class="gene-id">g6</div>
+      <div class="gene-name">Outer height</div>
+      <div class="gene-desc">Vertical extent of outermost tier</div>
+    </div>
+    <div class="gene-cell">
+      <div class="gene-id">g7</div>
+      <div class="gene-name">Sprawl</div>
+      <div class="gene-desc">Overall horizontal scaling factor</div>
+    </div>
+    <div class="gene-cell">
+      <div class="gene-id">g8</div>
+      <div class="gene-name">Depth</div>
+      <div class="gene-desc">Recursion depth — branching levels (3–9)</div>
+    </div>
+  </div>
+</section>
+
+<!-- Classics -->
+<section class="classics-section">
+  <div class="classics-inner">
+    <div class="section-header">
+      <span class="section-num" style="color:var(--gold)">03 / Classics</span>
+      <h2 class="section-title" style="color:var(--paper)">Named creatures</h2>
+    </div>
+    <div class="classics-strip" id="classics-strip"></div>
+  </div>
+</section>
+
+<!-- About -->
+<section class="gene-section" id="about">
+  <div class="section-header">
+    <span class="section-num">04 / About</span>
+    <h2 class="section-title">Author &amp; contact</h2>
+  </div>
+  <div class="about-grid">
+    <div class="about-card">
+      <div class="about-label">Author</div>
+      <div class="about-name">Sergio Rojas-Galeano</div>
+      <div class="about-detail">v1.0 · June 2026</div>
+    </div>
+    <div class="about-card">
+      <div class="about-label">Contact</div>
+      <a href="mailto:srojas@udistrital.edu.co" class="about-email">srojas@udistrital.edu.co</a>
+      <div class="about-detail">Universidad Distrital Francisco José de Caldas</div>
+    </div>
+    <div class="about-card">
+      <div class="about-label">Original concept</div>
+      <div class="about-name">Richard Dawkins</div>
+      <div class="about-detail"><em>The Blind Watchmaker</em>, 1986</div>
+    </div>
+    <div class="about-card">
+      <div class="about-label">License</div>
+      <div class="about-name">MIT</div>
+      <div class="about-detail">Free to use, modify and distribute</div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <span class="footer-copy">
+    Sergio Rojas-Galeano (v1.0) · Concept by Richard Dawkins · MIT License
+  </span>
+  <div class="footer-links">
+    <a href="biomorph_creator.html">Creator</a>
+    <a href="biomorph_evolver.html">Evolver</a>
+    <a href="mailto:srojas@udistrital.edu.co">Contact</a>
+  </div>
+</footer>
+
+<script>
+/* ── Biomorph drawing engine (self-contained) ── */
+const CLASSICS = [
+  {name:'Cricket',  o:[0,1,-5,0,-3,9,1,-4,7]},
+  {name:'Fern',     o:[-4,-4,-7,-6,-9,-6,-4,0,9]},
+  {name:'Spider',   o:[8,-8,-1,-1,-3,-5,-8,-5,5]},
+  {name:'Bat',      o:[-8,-5,-3,-4,-3,-5,-6,0,6]},
+  {name:'Pyramid',  o:[-9,-3,9,0,5,1,4,0,9]},
+  {name:'Scorpio',  o:[-4,6,1,-8,-4,8,-7,5,7]},
+  {name:'Beetle',   o:[3,-6,2,8,-8,-1,9,8,5]},
+  {name:'Tree',     o:[-7,-4,5,-4,-9,-3,-8,-3,5]},
+  {name:'Crab',     o:[-8,-5,3,2,3,7,-5,-9,6]},
+];
+
+/* Archetype */
+const ARCHETYPE = [-6,-6,-6,-8,-4,0,4,8,5];
+
+function getDxDy(g){
+  return {
+    dx: [-g[1],-g[0], 0, g[0], g[1], g[2], 0,-g[2]],
+    dy: [ g[3], g[4], g[5], g[4], g[3], g[2], g[5], g[2]]
+  };
+}
+
+function computeBounds(g){
+  const {dx,dy}=getDxDy(g), len=g[8];
+  let x0=0,y0=0,x1=0,y1=0;
+  function walk(x,y,l,d){
+    const x2=x+l*dx[d], y2=y+l*dy[d];
+    x0=Math.min(x0,x2); y0=Math.min(y0,y2);
+    x1=Math.max(x1,x2); y1=Math.max(y1,y2);
+    if(l>0){walk(x2,y2,l-1,(d+7)%8); walk(x2,y2,l-1,(d+1)%8);}
+  }
+  walk(0,0,len,2); return{x0,y0,x1,y1};
+}
+
+function drawBiomorph(canvas, g, pad=18, strokeColor='rgba(26,20,16,0.82)'){
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle=strokeColor; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=1;
+  const {dx,dy}=getDxDy(g), len=g[8];
+  if(len<1) return;
+  const b=computeBounds(g);
+  const sc=Math.min((W-pad*2)/Math.max(b.x1-b.x0,1),(H-pad*2)/Math.max(b.y1-b.y0,1));
+  const ox=W/2-(b.x0+b.x1)/2*sc, oy=H/2-(b.y0+b.y1)/2*sc;
+  function tree(x,y,l,d){
+    const x2=x+l*dx[d], y2=y+l*dy[d];
+    ctx.beginPath(); ctx.moveTo(ox+x*sc,oy+y*sc); ctx.lineTo(ox+x2*sc,oy+y2*sc); ctx.stroke();
+    if(l>0){tree(x2,y2,l-1,(d+7)%8); tree(x2,y2,l-1,(d+1)%8);}
+  }
+  tree(0,0,len,2);
+}
+
+/* ── Hero animation: slowly morph through genomes ── */
+const heroCanvas  = document.getElementById('hero-canvas');
+const heroGenomeEl = document.getElementById('hero-genome');
+const TOUR = [ARCHETYPE, ...CLASSICS.map(c=>c.o)];
+let tourIdx  = 0;
+let current  = [...ARCHETYPE];
+let target   = [...CLASSICS[0].o];
+let progress = 0;
+const STEPS  = 80;
+
+function lerpGenes(a, b, t){
+  return a.map((v,i)=> Math.round(v + (b[i]-v)*t));
+}
+
+function heroTick(){
+  progress++;
+  if(progress >= STEPS){
+    progress = 0;
+    tourIdx  = (tourIdx+1) % TOUR.length;
+    current  = [...TOUR[tourIdx]];
+    target   = [...TOUR[(tourIdx+1) % TOUR.length]];
+  }
+  const t  = progress / STEPS;
+  const ease = t<0.5 ? 2*t*t : -1+(4-2*t)*t; // ease-in-out
+  const g  = lerpGenes(current, target, ease);
+  drawBiomorph(heroCanvas, g, 28);
+  heroGenomeEl.textContent = '['+g.join(',')+']';
+}
+
+setInterval(heroTick, 80);
+drawBiomorph(heroCanvas, ARCHETYPE, 28);
+
+/* ── Classics strip ── */
+const strip = document.getElementById('classics-strip');
+CLASSICS.forEach(item=>{
+  const chip = document.createElement('div');
+  chip.className = 'classic-chip';
+  const cv = document.createElement('canvas');
+  cv.width = 70; cv.height = 72;
+  drawBiomorph(cv, item.o, 6, 'rgba(240,230,210,0.85)');
+  const lbl = document.createElement('div');
+  lbl.className = 'classic-name';
+  lbl.textContent = item.name;
+  chip.appendChild(cv); chip.appendChild(lbl);
+  strip.appendChild(chip);
+});
+</script>
+</body>
+</html>

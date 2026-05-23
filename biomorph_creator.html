@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biomorph Creator · Dawkins</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ff-body: 'DM Sans', system-ui, sans-serif;
+  --ff-mono: 'DM Mono', 'Courier New', monospace;
+  --bg-page:   #e8e6e0;
+  --bg-app:    #f5f3ee;
+  --bg-sec:    #ece9e2;
+  --bg-cell:   #f5f3ee;
+  --bg-info:   #ddeaf5;
+  --border:    rgba(0,0,0,.13);
+  --border-lt: rgba(0,0,0,.07);
+  --text-pri:  #1a1814;
+  --text-sec:  #4a4740;
+  --text-ter:  #8a8680;
+  --text-info: #2860a8;
+  --accent:    #c85a14;
+  --star-on:   #d4820a;
+  --blue:      #2060c0;
+  --green:     #287040;
+  --amber:     #b06010;
+  --red:       #b03020;
+  --radius:    6px;
+  --radius-sm: 4px;
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.15), 0 2px 8px rgba(0,0,0,.10);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-page:   #111110;
+    --bg-app:    #1c1b19;
+    --bg-sec:    #232220;
+    --bg-cell:   #1c1b19;
+    --bg-info:   #162030;
+    --border:    rgba(255,255,255,.10);
+    --border-lt: rgba(255,255,255,.05);
+    --text-pri:  #f0ede6;
+    --text-sec:  #a8a49c;
+    --text-ter:  #686460;
+    --text-info: #6898d8;
+    --accent:    #d8721e;
+    --star-on:   #e09820;
+    --blue:      #4888e0;
+    --green:     #48a868;
+    --amber:     #d08030;
+    --red:       #d04040;
+  }
+}
+
+html, body {
+  height: 100%; font-family: var(--ff-body); font-size: 14px;
+  background: var(--bg-page); color: var(--text-pri);
+  -webkit-font-smoothing: antialiased;
+}
+body {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 24px;
+}
+
+/* ── App frame ── */
+.app-frame {
+  width: 100%; max-width: 780px;
+  background: var(--bg-app); border-radius: 12px;
+  box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+  overflow: hidden; display: flex; flex-direction: column;
+}
+
+/* ── Title bar ── */
+.titlebar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px 11px; border-bottom: 1px solid var(--border);
+  background: var(--bg-app);
+}
+.app-title { font-size: 15px; font-weight: 600; letter-spacing: -.02em; color: var(--text-pri); }
+.title-vsep {
+  display: inline-block; width: 1px; height: 14px;
+  background: var(--border); margin: 0 4px; flex-shrink: 0; align-self: center;
+}
+.app-sub {
+  font-size: 9px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text-sec); font-family: var(--ff-mono); flex: 1;
+}
+.about-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 50%;
+  border: none; background: #2060c0;
+  font-size: 15px; font-weight: 900; color: #fff; font-style: normal;
+  cursor: pointer; transition: all .14s; flex-shrink: 0; font-family: var(--ff-body);
+}
+.about-btn:hover { background: #1a50a8; }
+
+/* ── Modal ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.45); z-index: 1000;
+  align-items: center; justify-content: center; padding: 24px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-app); border-radius: 12px; border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg); max-width: 480px; width: 100%;
+  max-height: 82vh; overflow-y: auto;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 14px; border-bottom: 1px solid var(--border);
+}
+.modal-title { font-size: 14px; font-weight: 600; color: var(--text-pri); }
+.modal-close {
+  width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border);
+  background: transparent; font-size: 16px; color: var(--text-sec);
+  cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;
+  transition: all .12s;
+}
+.modal-close:hover { background: var(--bg-sec); color: var(--text-pri); }
+.modal-body { padding: 18px 20px 20px; }
+.modal-body h3 {
+  font-size: 10px; letter-spacing: .10em; text-transform: uppercase;
+  color: var(--accent); font-family: var(--ff-mono); margin: 14px 0 7px;
+}
+.modal-body h3:first-child { margin-top: 0; }
+.modal-body p { font-size: 12px; line-height: 1.65; color: var(--text-sec); margin-bottom: 7px; }
+.modal-body ul { font-size: 12px; line-height: 1.65; color: var(--text-sec); padding-left: 16px; margin-bottom: 7px; }
+.modal-body li { margin-bottom: 3px; }
+.modal-body code {
+  font-family: var(--ff-mono); font-size: 11px;
+  background: var(--bg-sec); border-radius: 3px; padding: 1px 4px; color: var(--text-pri);
+}
+.modal-divider { height: 1px; background: var(--border); margin: 16px 0; }
+.license-block {
+  font-size: 10px; font-family: var(--ff-mono); color: var(--text-ter);
+  background: var(--bg-sec); border-radius: var(--radius-sm);
+  padding: 10px 12px; line-height: 1.6;
+}
+
+/* ── Main layout ── */
+.main-area {
+  display: flex; flex: 1; min-height: 460px;
+}
+
+/* ── Left panel ── */
+.left-panel {
+  width: 272px; flex-shrink: 0;
+  background: var(--bg-sec); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; padding: 14px;
+}
+
+/* mode toggle */
+.mode-row {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 14px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.mode-lbl {
+  font-size: 9px; letter-spacing: .10em; text-transform: uppercase;
+  color: var(--text-sec); font-family: var(--ff-mono); margin-right: 2px;
+}
+.radio-opt {
+  display: flex; align-items: center; gap: 3px; cursor: pointer;
+  font-size: 10px; color: var(--text-sec); white-space: nowrap;
+}
+.radio-opt input { cursor: pointer; accent-color: var(--accent); }
+
+/* sliders */
+.sliders-panel { display: flex; flex-direction: column; flex: 1; overflow-y: auto; }
+.gene-row { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; }
+.gene-top { display: flex; justify-content: space-between; align-items: baseline; }
+.gene-name { font-size: 13px; font-weight: 500; color: var(--text-pri); }
+.gene-desc { font-size: 10px; color: var(--text-sec); margin-top: 1px; }
+.gene-val {
+  font-size: 12px; font-family: var(--ff-mono); color: var(--text-sec);
+  min-width: 26px; text-align: right;
+}
+input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+
+/* genome box */
+.genome-box {
+  margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border);
+}
+.glabel {
+  font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-sec); font-family: var(--ff-mono); margin-bottom: 4px;
+}
+.gval {
+  font-family: var(--ff-mono); font-size: 10px; color: var(--text-pri);
+  letter-spacing: .03em; word-break: break-all; line-height: 1.5;
+}
+.btn-row { display: flex; gap: 6px; margin-top: 10px; flex-wrap: nowrap; }
+.abtn {
+  font-size: 10px; padding: 4px 11px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer; background: transparent; color: var(--text-sec);
+  font-family: var(--ff-body); transition: all .12s; display: inline-flex;
+  align-items: center; gap: 4px;
+}
+.abtn:hover { color: var(--text-pri); border-color: var(--border); background: var(--bg-app); }
+.abtn .ico { font-size: 16px; line-height: 1; }
+.abtn.save-btn:hover { color: var(--green); border-color: var(--green); }
+.abtn.export-btn:hover { color: var(--blue); border-color: var(--blue); }
+
+/* ── Right panel (canvas) ── */
+.right-panel {
+  flex: 1; background: var(--bg-cell);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.right-panel canvas { display: block; }
+.canvas-hint {
+  position: absolute; bottom: 10px; right: 12px;
+  font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-sec); font-family: var(--ff-mono);
+}
+
+/* scrollbar */
+::-webkit-scrollbar { height: 4px; width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">About Biomorph Creator</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <h3>What is this?</h3>
+      <p>The <strong>Biomorph Creator</strong> is a companion to the Biomorph Evolver. Sculpt a single creature manually by adjusting its genes with sliders, rather than evolving a population. Craft a precise starting creature, then seed it into the Evolver for further evolution.</p>
+
+      <h3>Gene modes</h3>
+      <ul>
+        <li><code>Friendly</code> — 5 intuitive parameters that map to the full 9-gene system internally:
+          <strong>Complexity</strong> (recursion depth), <strong>Spread</strong> (horizontal fan),
+          <strong>Height</strong> (vertical scale), <strong>Taper</strong> (branch shortening toward tips),
+          <strong>Sprawl</strong> (horizontal extremities).</li>
+        <li><code>Original</code> — direct access to all 9 Dawkins genes (g0–g7 + recursion depth), giving full control over the creature's geometry.</li>
+      </ul>
+      <p>The genome display at the bottom always shows the active values and, in friendly mode, the expanded 9-gene equivalent.</p>
+
+      <h3>Controls</h3>
+      <ul>
+        <li><strong>🎲 Random</strong> — jumps to a random genome in the current mode.</li>
+        <li><strong>✴️ Reset</strong> — returns to the archetype genome from <em>The Blind Watchmaker</em>.</li>
+        <li><strong>⏬ Export biomorph</strong> — saves the current creature as a <code>biomorph-creator-export.json</code> file, ready to import into the Evolver's Gallery via ⏫. </li>
+        <li><strong>📸 Screenshot</strong> — saves the biomorph as a <code>biomorph-creator.png</code> image.</li>
+        <li><strong>👽 Open Evolver</strong> — opens the Biomorph Evolver in a new tab.</li>
+      </ul>
+
+      <h3>Using with the Evolver</h3>
+      <p>1. Design your creature here and click <strong>⏬ Export biomorph</strong>.<br>
+         2. Open the Evolver (or click <strong>👽</strong>), switch to the ⭐ Gallery tab, and click <strong>⏫</strong> to load the file.<br>
+         3. Your creature appears in the gallery — click it to set it as parent and start evolving.</p>
+
+      <div class="modal-divider"></div>
+
+      <h3>Author &amp; License</h3>
+      <p>Sergio Rojas-Galeano (v1.0) · Concept by Richard Dawkins · MIT License</p>
+      <div class="license-block">MIT License<br><br>
+Copyright (c) 2026 Sergio Rojas-Galeano<br><br>
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:<br><br>
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.<br><br>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</div>
+    </div>
+  </div>
+</div>
+
+<!-- App -->
+<div class="app-frame">
+
+  <div class="titlebar">
+    <span class="app-title">Biomorph Creator</span>
+    <span class="title-vsep"></span>
+    <span class="app-sub">Inspired by R. Dawkins · The Blind Watchmaker</span>
+    <button class="about-btn" onclick="openModal()" title="About &amp; user guide">i</button>
+  </div>
+
+  <div class="main-area">
+
+    <!-- Left: controls -->
+    <div class="left-panel">
+
+      <div class="mode-row">
+        <span class="mode-lbl">Genes</span>
+        <label class="radio-opt"><input type="radio" name="gmode" value="friendly" checked onchange="setMode('friendly')"> friendly</label>
+        <label class="radio-opt"><input type="radio" name="gmode" value="original" onchange="setMode('original')"> original</label>
+      </div>
+
+      <!-- Friendly sliders -->
+      <div id="panel-friendly" class="sliders-panel">
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">Complexity</span><span class="gene-val" id="fv0">5</span></div>
+          <div class="gene-desc">recursion depth — branching levels</div>
+          <input type="range" min="3" max="9" step="1" value="5" id="fs0">
+        </div>
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">Spread</span><span class="gene-val" id="fv1">-6</span></div>
+          <div class="gene-desc">horizontal fan of all branches</div>
+          <input type="range" min="-9" max="9" step="1" value="-6" id="fs1">
+        </div>
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">Height</span><span class="gene-val" id="fv2">-8</span></div>
+          <div class="gene-desc">overall vertical scale</div>
+          <input type="range" min="-9" max="9" step="1" value="-8" id="fs2">
+        </div>
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">Taper</span><span class="gene-val" id="fv3">-9</span></div>
+          <div class="gene-desc">branch shortening toward tips</div>
+          <input type="range" min="-9" max="9" step="1" value="-9" id="fs3">
+        </div>
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">Sprawl</span><span class="gene-val" id="fv4">8</span></div>
+          <div class="gene-desc">horizontal extremities</div>
+          <input type="range" min="-9" max="9" step="1" value="8" id="fs4">
+        </div>
+      </div>
+
+      <!-- Original sliders -->
+      <div id="panel-original" class="sliders-panel" style="display:none">
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">g0</span><span class="gene-val" id="ov0">-6</span></div>
+          <div class="gene-desc">horizontal spread of inner branches</div>
+          <input type="range" min="-9" max="9" step="1" value="-6" id="os0">
+        </div>
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">g1</span><span class="gene-val" id="ov1">-6</span></div>
+          <div class="gene-desc">horizontal spread of mid branches</div>
+          <input type="range" min="-9" max="9" step="1" value="-6" id="os1">
+        </div>
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">g2</span><span class="gene-val" id="ov2">-6</span></div>
+          <div class="gene-desc">horizontal spread of outer branches</div>
+          <input type="range" min="-9" max="9" step="1" value="-6" id="os2">
+        </div>
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">g3</span><span class="gene-val" id="ov3">-8</span></div>
+          <div class="gene-desc">vertical length of trunk</div>
+          <input type="range" min="-9" max="9" step="1" value="-8" id="os3">
+        </div>
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">g4</span><span class="gene-val" id="ov4">-4</span></div>
+          <div class="gene-desc">vertical extent of inner branches</div>
+          <input type="range" min="-9" max="9" step="1" value="-4" id="os4">
+        </div>
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">g5</span><span class="gene-val" id="ov5">0</span></div>
+          <div class="gene-desc">vertical extent of mid branches</div>
+          <input type="range" min="-9" max="9" step="1" value="0" id="os5">
+        </div>
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">g6</span><span class="gene-val" id="ov6">4</span></div>
+          <div class="gene-desc">vertical extent of outer branches</div>
+          <input type="range" min="-9" max="9" step="1" value="4" id="os6">
+        </div>
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">g7</span><span class="gene-val" id="ov7">8</span></div>
+          <div class="gene-desc">horizontal scaling factor</div>
+          <input type="range" min="-9" max="9" step="1" value="8" id="os7">
+        </div>
+        <div class="gene-row">
+          <div class="gene-top"><span class="gene-name">depth</span><span class="gene-val" id="ov8">5</span></div>
+          <div class="gene-desc">recursion depth (min 3)</div>
+          <input type="range" min="3" max="9" step="1" value="5" id="os8">
+        </div>
+      </div>
+
+      <!-- Genome display + buttons -->
+      <div class="genome-box">
+        <div class="glabel" id="genome-label">5-gene genome → expanded</div>
+        <div class="gval" id="gstr"></div>
+        <div class="btn-row">
+          <button class="abtn" onclick="rnd()" title="Random genome"><span class="ico">🎲</span></button>
+          <button class="abtn" onclick="rst()" title="Reset to archetype"><span class="ico">✴️</span></button>
+          <button class="abtn save-btn" onclick="saveToGallery()" title="Export biomorph (to import in Evolver gallery)"><span class="ico">⏬</span></button>
+          <button class="abtn export-btn" onclick="exportPNG()" title="Screenshot biomorph as PNG"><span class="ico">📸</span></button>
+          <button class="abtn" onclick="openEvolver()" title="Open Biomorph Evolver in a new tab"><span class="ico">👽</span></button>
+        </div>
+      </div>
+
+    </div><!-- /left-panel -->
+
+    <!-- Right: canvas -->
+    <div class="right-panel" id="right-panel">
+      <canvas id="cv"></canvas>
+      <div class="canvas-hint" id="mode-hint">friendly mode</div>
+    </div>
+
+  </div><!-- /main-area -->
+</div><!-- /app-frame -->
+
+<script>
+const cv  = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let mode  = 'friendly';
+
+/* Archetypical Dawkins genome from The Blind Watchmaker:
+   9-gene: [-6,-6,-6,-8,-4,0,4,8,5]
+   Friendly approximation: cx=5,sp=-6,ht=-8,ta=-9,sw=8 → expands to [-6,-4,-2,-8,-8,0,0,8,5] */
+let F = [5,-6,-8,-9,8];
+const F_DEFAULTS = [5,-6,-8,-9,8];
+const F_ARCHETYPE = [5,-6,-8,-9,8];
+
+let O = [-6,-6,-6,-8,-4,0,4,8,5];
+const O_DEFAULTS = [-6,-6,-6,-8,-4,0,4,8,5];
+const O_ARCHETYPE = [-6,-6,-6,-8,-4,0,4,8,5];
+
+/* ── Canvas sizing ── */
+function resizeCanvas(){
+  const r = document.getElementById('right-panel');
+  cv.width  = r.clientWidth  || 400;
+  cv.height = r.clientHeight || 460;
+}
+
+/* ── Drawing (identical algorithm to Evolver) ── */
+function expand(f){
+  const[cx,sp,ht,ta,sw]=f, t=ta/9;
+  return[
+    Math.round(sp), Math.round(sp*.7), Math.round(sp*.4),
+    ht, ht,
+    Math.round(ht*(1+t)),
+    Math.round(ht*(1+t)*(1+t*.5)),
+    sw, cx
+  ];
+}
+function getDxDy(g){
+  return{
+    dx:[-g[1],-g[0],0,g[0],g[1],g[2],0,-g[2]],
+    dy:[ g[5], g[4],g[3],g[4],g[5],g[6],g[7],g[6]]
+  };
+}
+function computeBounds(g){
+  const{dx,dy}=getDxDy(g), len=g[8];
+  let x0=0,x1=0,y0=0,y1=0;
+  function walk(x,y,l,d){
+    const x2=x+l*dx[d], y2=y+l*dy[d];
+    x0=Math.min(x0,x2); x1=Math.max(x1,x2);
+    y0=Math.min(y0,y2); y1=Math.max(y1,y2);
+    if(l>0){walk(x2,y2,l-1,(d+7)%8);walk(x2,y2,l-1,(d+1)%8);}
+  }
+  walk(0,0,len,2);
+  return{x0,x1,y0,y1};
+}
+function drawGenes(g){
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const dark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  ctx.strokeStyle=dark?'rgba(220,215,200,0.90)':'rgba(26,24,20,0.85)';
+  ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=1;
+  const{dx,dy}=getDxDy(g), len=g[8];
+  if(len<1)return;
+  const b=computeBounds(g), pad=24;
+  const sc=Math.min((W-pad*2)/Math.max(b.x1-b.x0,1),(H-pad*2)/Math.max(b.y1-b.y0,1));
+  const ox=W/2-(b.x0+b.x1)/2*sc, oy=H/2-(b.y0+b.y1)/2*sc;
+  function tree(x,y,l,d){
+    const x2=x+l*dx[d], y2=y+l*dy[d];
+    ctx.beginPath(); ctx.moveTo(ox+x*sc,oy+y*sc); ctx.lineTo(ox+x2*sc,oy+y2*sc); ctx.stroke();
+    if(l>0){tree(x2,y2,l-1,(d+7)%8);tree(x2,y2,l-1,(d+1)%8);}
+  }
+  tree(0,0,len,2);
+}
+function draw(){
+  drawGenes(mode==='friendly'?expand(F):O);
+}
+
+/* ── Genome display ── */
+function updateStr(){
+  if(mode==='friendly'){
+    const g=expand(F);
+    document.getElementById('genome-label').textContent='5-gene genome → expanded';
+    document.getElementById('gstr').textContent='['+F.join(', ')+'] → ['+g.join(', ')+']';
+  } else {
+    document.getElementById('genome-label').textContent='9-gene genome';
+    document.getElementById('gstr').textContent='['+O.join(', ')+']';
+  }
+}
+
+/* ── Slider wiring ── */
+for(let i=0;i<5;i++){
+  document.getElementById('fs'+i).addEventListener('input',function(){
+    F[i]=parseInt(this.value);
+    document.getElementById('fv'+i).textContent=F[i];
+    updateStr(); draw();
+  });
+}
+for(let i=0;i<9;i++){
+  document.getElementById('os'+i).addEventListener('input',function(){
+    O[i]=parseInt(this.value);
+    document.getElementById('ov'+i).textContent=O[i];
+    updateStr(); draw();
+  });
+}
+
+function syncFriendlyUI(){
+  for(let i=0;i<5;i++){
+    document.getElementById('fs'+i).value=F[i];
+    document.getElementById('fv'+i).textContent=F[i];
+  }
+}
+function syncOriginalUI(){
+  for(let i=0;i<9;i++){
+    document.getElementById('os'+i).value=O[i];
+    document.getElementById('ov'+i).textContent=O[i];
+  }
+}
+
+/* ── Mode toggle ── */
+function setMode(m){
+  mode=m;
+  document.getElementById('panel-friendly').style.display=m==='friendly'?'flex':'none';
+  document.getElementById('panel-original').style.display=m==='original'?'flex':'none';
+  document.getElementById('mode-hint').textContent=m+' mode';
+  updateStr(); draw();
+}
+
+/* ── Random / Reset ── */
+function randInt(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+
+function rnd(){
+  if(mode==='friendly'){
+    F=[randInt(3,9),randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(-9,9)];
+    syncFriendlyUI();
+  } else {
+    O=[randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(-9,9),randInt(3,9)];
+    syncOriginalUI();
+  }
+  updateStr(); draw();
+}
+function rst(){
+  if(mode==='friendly'){ F=[...F_ARCHETYPE]; syncFriendlyUI(); }
+  else { O=[...O_ARCHETYPE]; syncOriginalUI(); }
+  updateStr(); draw();
+}
+
+/* ── Download helper (data URL — works in all contexts) ── */
+function downloadData(content, filename, mime){
+  const isJson = !mime || mime==='application/json';
+  const dataUrl = isJson
+    ? 'data:application/json;charset=utf-8,'+encodeURIComponent(content)
+    : content;
+  const a=document.createElement('a');
+  a.href=dataUrl; a.download=filename; a.style.display='none';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{try{document.body.removeChild(a);}catch(e){}},500);
+}
+
+/* ── Save to gallery (Evolver-compatible format) ── */
+function saveToGallery(){
+  const f = mode==='friendly' ? [...F] : [...F_DEFAULTS];
+  const o = mode==='friendly' ? expand(F) : [...O];
+  const g9 = [...o];
+  const entry = {
+    f, o, g9,
+    name: '★1'   /* single entry; user can rename in the JSON if desired */
+  };
+  const payload = {
+    type: 'biomorphs-gallery',
+    version: 1,
+    entries: [entry]
+  };
+  downloadData(JSON.stringify(payload,null,2), 'biomorph-creator-export.json');
+}
+
+/* ── Cross-invoke ── */
+function openEvolver(){
+  window.open('biomorph_evolver.html', '_blank');
+}
+
+/* ── Export PNG ── */
+function exportPNG(){
+  const W=cv.width, H=cv.height;
+  /* Composite: fill background first on an offscreen canvas */
+  const off=document.createElement('canvas'); off.width=W; off.height=H;
+  const oc=off.getContext('2d');
+  const dark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  oc.fillStyle=dark?'#1c1b19':'#f5f3ee';
+  oc.fillRect(0,0,W,H);
+  oc.drawImage(cv,0,0);
+  /* watermark */
+  oc.font='9px DM Sans,sans-serif';
+  oc.fillStyle=dark?'rgba(255,255,255,.14)':'rgba(0,0,0,.16)';
+  oc.fillText('Biomorph Creator · '+document.getElementById('gstr').textContent, 6, H-6);
+  downloadData(off.toDataURL('image/png'),'biomorph-creator.png','image/png');
+}
+
+/* ── Modal ── */
+function openModal()  { document.getElementById('modal-overlay').classList.add('open'); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+/* ── Init ── */
+window.addEventListener('resize', ()=>{ resizeCanvas(); draw(); });
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+
+resizeCanvas();
+syncFriendlyUI();
+syncOriginalUI();
+updateStr();
+draw();
+</script>
+</body>
+</html>
