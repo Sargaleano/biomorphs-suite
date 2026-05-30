@@ -4,7 +4,6 @@
 ![Version](https://img.shields.io/badge/version-1.0-orange.svg)
 [![JavaScript](https://img.shields.io/badge/built%20with-JavaScript-f7df1e.svg?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg)]()
-![GitHub Pages](https://sargaleano.github.io/biomorphs-suite/actions/workflows/pages/pages-build-deployment/badge.svg)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen.svg)](https://sargaleano.github.io/biomorphs-suite/)
 
 ---
